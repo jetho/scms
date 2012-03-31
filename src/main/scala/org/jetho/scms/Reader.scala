@@ -1,5 +1,5 @@
 
- /** The S-Expression Parser for reading the input.*/
+ /** The S-Expression Parser.*/
 
 
 package org.jetho.scms
