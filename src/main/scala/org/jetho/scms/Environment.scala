@@ -17,7 +17,7 @@ class Environment(ids: Map[String, Exp], parent: Option[Environment]) {
   type Scope = Map[String, Exp]
     
   /** Search up the scope stack for a given identifier.
-      Call the action function parameter with the scope which contains the identifier.
+      Apply the action function to the scope which contains the identifier.
       Fail if the scope stack doesn't contain a valid binding for the given identifier.*/
   private def forScopeOf(id: String)(action: (Scope => Exp)): Validation[String, Exp] =
     if (ids contains id)
