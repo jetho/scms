@@ -15,7 +15,7 @@ The next points to do:
 * convert to continuation passing style to support tail call optimization
 
 
-Maybe:
+Maybe later:
 
 * oop support
 * implement a compiler 
