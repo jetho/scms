@@ -1,5 +1,5 @@
 
-/** The environment abstraction which is used for implementing lexical scoping.*/
+/** The environment abstraction which is used for nested scoping.*/
 
 
 package org.jetho.scms
@@ -10,14 +10,14 @@ import Scalaz._
 import scala.collection.mutable.Map
 
 
-/** An environment consists of a mapping from identifiers to values (expressions).
+/** An environment represents a mapping from identifiers to values (bindings).
     It holds a reference to its parent environment to support nested scopes.*/
 class Environment(ids: Map[String, Exp], parent: Option[Environment]) {
 
   type Scope = Map[String, Exp]
     
-  /** Searching up the scope stack for a given identifier.
-      Call the action function with the scope which contains the identifier.
+  /** Search up the scope stack for a given identifier.
+      Call the action function parameter with the scope which contains the identifier.
       Fail if the scope stack doesn't contain a valid binding for the given identifier.*/
   private def forScopeOf(id: String)(action: (Scope => Exp)): Validation[String, Exp] =
     if (ids contains id)
