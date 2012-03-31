@@ -6,12 +6,16 @@
 My aim with this project is to implement an Interpreter for a decent subset of Scheme in Scala. 
 This project is still in the beginning stages and currently only provides a Parser and an Environment abstraction.
 
+
 The next points to do:
+
 * implement a basic recursive evaluator
 * add primitive operations
 * add support for macros
 * convert to continuation passing style to support tail call optimization
 
+
 Maybe:
+
 * oop support
 * implement a compiler 
