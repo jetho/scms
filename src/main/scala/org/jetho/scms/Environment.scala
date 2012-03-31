@@ -1,5 +1,5 @@
 
-/** The environment abstraction which is used for nested scoping.*/
+/** The environment abstraction used for nested scoping.*/
 
 
 package org.jetho.scms
