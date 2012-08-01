@@ -4,7 +4,7 @@
 #### A CPS-based Scheme Interpreter in Scala
 
 My aim with this project is to implement an Interpreter for a decent subset of Scheme in Scala. 
-This project is still in the beginning stages and currently only provides a Parser and an Environment abstraction.
+This project is still in its beginning stages.
 
 
 The next points to do:
