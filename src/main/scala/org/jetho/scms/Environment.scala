@@ -18,14 +18,14 @@ class Environment(ids: Map[String, Exp], parent: Option[Environment]) {
     
   /** Search up the scope stack for a given identifier.
       Apply the action function to the scope which contains the identifier.
-      Fail if the scope stack doesn't contain a valid binding for the given identifier.*/
+      Fail if the scope stack doesn't contain a valid binding for the identifier.*/
   private def forScopeOf(id: String)(action: (Scope => Exp)): Validation[String, Exp] =
     if (ids contains id)
       action(ids).success
     else
       parent.map(_.forScopeOf(id)(action)).getOrElse(("No valid binding found for Identifier " + id).fail)
 
-  /** Search the scope stack for the given identifier and return the connected value.*/
+  /** Search the scope stack for the given identifier and return the associated value.*/
   def lookup(name: String) =
     forScopeOf(name) { scope => 
       scope(name) 
