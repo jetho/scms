@@ -13,31 +13,31 @@ import Scalaz._
 
 object Reader extends RegexParsers {
 
-  override val skipWhitespace = false
+  private def space  = "[ \\n]*".r
 
-  def space = rep1(" ")
-
-  def symbol: Parser[Exp] = """[a-zA-Z!#$%&|*+/:<=>?@^_~-]\w*""".r ^^ { 
+  private def symbol: Parser[Exp] = """[a-zA-Z!#$%&|*+/:<=>?@^_~-]\w*""".r ^^ { 
     case "#t" => BoolExp(true)
     case "#f" => BoolExp(false)
     case sym => SymbolExp(sym)
   }
 
-  def string: Parser[StringExp] = "\"" ~> rep("[^\"]".r) <~ "\"" ^^ { s => StringExp(s.mkString) }
+  private def string: Parser[StringExp] = "\"" ~> rep("[^\"]".r) <~ "\"" ^^ { s => StringExp(s.mkString) }
 
-  def number: Parser[NumExp] = rep1("[0-9]+".r) ^^ { n => NumExp(n.mkString.toInt) }
+  private def number: Parser[NumExp] = "[0-9]+".r ^^ { n => NumExp(n.toInt) }
 
-  def list: Parser[ListExp] = "(" ~> repsep(exp, space) <~ ")" ^^ { l => ListExp(l) }
+  private def list: Parser[ListExp] = rep(expr) ^^ { ListExp }
 
-  def quoted: Parser[ListExp] = "'" ~> exp ^^ { e => ListExp(List(SymbolExp("quote"), e)) }
+  private def dottedList : Parser[DottedListExp] = rep(expr) ~ "." ~ expr ^^ { case head ~ "." ~ tail => new DottedListExp(head, tail) }
 
-  def exp: Parser[Exp] = list | symbol | string | number | quoted  
+  private def quoted: Parser[ListExp] = "'" ~> expr ^^ { e => ListExp(List(SymbolExp("quote"), e)) }
+
+  private def expr: Parser[Exp] = symbol | string | number | quoted | '(' ~> (dottedList | list) <~ space <~ ')'
 
 
-  def apply(input: String): Validation[String, Exp] = 
-    parse(exp, input) match {
-      case Success(res, _) => res.success
-      case NoSuccess(msg, _) => msg.fail 
+  def apply(input: String): \/[String, Exp] =
+    parse(expr, input) match {
+      case Success(res, _) => res.right
+      case NoSuccess(msg, _) => msg.left 
     }
   
 }

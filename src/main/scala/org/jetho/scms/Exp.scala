@@ -12,7 +12,11 @@ case class SymbolExp(name: String) extends Exp {
 }
 
 case class ListExp(elems: List[Exp]) extends Exp {
-  override def toString = "(" + elems.map(_.toString).mkString(" ") + ")"
+  override def toString = "(" + elems.mkString(" ") + ")"
+}
+
+case class DottedListExp(head : List[Exp], tail : Exp) extends Exp {
+  override def toString = "(" + head.mkString(" ") + " . " + tail + ")"
 }
 
 case class NumExp(i: Int) extends Exp {
@@ -20,7 +24,7 @@ case class NumExp(i: Int) extends Exp {
 }
 
 case class StringExp(s: String) extends Exp {
-  override def toString = s
+  override def toString = "\"" + s + "\""
 }
 
 case class BoolExp(b: Boolean) extends Exp {
