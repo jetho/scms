@@ -27,11 +27,13 @@ object Reader extends RegexParsers {
 
   private def list: Parser[ListExp] = rep(expr) ^^ { ListExp }
 
-  private def dottedList : Parser[DottedListExp] = rep(expr) ~ "." ~ expr ^^ { case head ~ "." ~ tail => new DottedListExp(head, tail) }
+  private def dottedList : Parser[DottedListExp] = 
+    rep(expr) ~ "." ~ expr ^^ { case head ~ "." ~ tail => new DottedListExp(head, tail) }
 
   private def quoted: Parser[ListExp] = "'" ~> expr ^^ { e => ListExp(List(SymbolExp("quote"), e)) }
 
-  private def expr: Parser[Exp] = symbol | string | number | quoted | '(' ~> (dottedList | list) <~ space <~ ')'
+  private def expr: Parser[Exp] = 
+    symbol | string | number | quoted | '(' ~> (dottedList | list) <~ space <~ ')'
 
 
   def apply(input: String): \/[String, Exp] =
