@@ -13,7 +13,6 @@ object Eval {
 
   type Primitive = List[Exp] => Exp
 
- 
   def eval(exp: Exp): \/[String, Exp] = exp match {
     case n @ NumExp(_) => n.right
     case s @ StringExp(_) => s.right
@@ -23,8 +22,10 @@ object Eval {
     case _ => s"Unknown Expression $exp".left
   }
 
-  def applyFunc(func: String)(args: List[Exp]) =
-    primitives(func)(args).right
+  def applyFunc(id: String)(args: List[Exp]) =
+    for {
+      f <- !primitives.contains(id) either s"Unknown Function $id" or primitives(id)
+    } yield f(args)
 
   def numericBinOp(op : (Int, Int) => Int)(args: List[Exp]) = {
     val (first :: rest) = args map unpackNum
