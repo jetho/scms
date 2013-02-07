@@ -27,7 +27,7 @@ object Eval {
   def applyFunc(id: String)(args: List[Exp]) =
     toRight(primitives.get(id))(s"Unknown Function: $id") >>= (_ apply args)
 
-  def numericBinOp(op : (Int, Int) => Int)(args: List[Exp]) = 
+  def numericBinOp(op: (Int, Int) => Int)(args: List[Exp]) = 
     for {
       params <- args.map(unpackNum).sequenceU
     } yield NumExp(params.reduceLeft(op))
