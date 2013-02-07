@@ -30,8 +30,7 @@ object Eval {
   def numericBinOp(op : (Int, Int) => Int)(args: List[Exp]) = 
     for {
       params <- args.map(unpackNum).sequenceU
-      val (first :: rest) = params
-    } yield NumExp(rest.foldLeft(first)(op))
+    } yield NumExp(params.reduceLeft(op))
     
   def unpackNum(e: Exp): Result[Int] = e match {
     case NumExp(n) => n.right
