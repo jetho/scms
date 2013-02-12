@@ -11,7 +11,7 @@ import Scalaz._
 
 object Eval {
 
-  type Result[A] = String \/ A  
+  type Result[A] = ErrorMsg \/ A  
   type Primitive = List[Exp] => Result[Exp]
 
 
@@ -29,22 +29,24 @@ object Eval {
         }
       } yield res   
     case ListExp(SymbolExp(f) :: args) => args.map(eval).sequenceU >>= applyFunc(f)
-    case _ => s"Unknown Expression: $exp".left
+    case _ => BadSpecialForm("Unrecognized special form", exp).left
   }
 
   def applyFunc(id: String)(args: List[Exp]) =
-    toRight(primitives.get(id))(s"Unknown Function: $id") >>= (_ apply args)
+    primitives.get(id) map { _.apply(args) } getOrElse NotFunction("Unrecognized primitive function args", id).left
 
   def numericBinOp(op: (Int, Int) => Int)(args: List[Exp]) = 
-    for {
-      params <- args.map(unpackNum).sequenceU
-    } yield NumExp(params.reduceLeft(op))
+    if (args.length < 2) NumArgs(2, args).left
+    else
+      for {
+        params <- args.map(unpackNum).sequenceU
+      } yield NumExp(params.reduceLeft(op))
     
-  def unpackNum(e: Exp): Result[Int] = e match {
+  def unpackNum(exp: Exp): Result[Int] = exp match {
     case NumExp(n) => n.right
-    case StringExp(s) => try { s.toInt.right } catch { case _: Throwable => s"Illegal Number: $s".left }
+    case StringExp(s) => try { s.toInt.right } catch { case _: Throwable => TypeMismatch("number", exp).left }
     case ListExp(List(n)) => unpackNum(n)
-    case _ => s"Illegal Number: $e".left
+    case _ => TypeMismatch("number", exp).left
   }
 
   def numBoolBinOp = boolBinOp(unpackNum) _
@@ -52,23 +54,23 @@ object Eval {
   def strBoolBinOp = boolBinOp(unpackStr) _
   
   def boolBinOp[A](unpacker: Exp => Result[A])(op: (A, A) => Boolean)(args: List[Exp]) = 
-    if (args.length != 2) ("Expected 2 args, found values: " + args.mkString(" ")).left 
+    if (args.length != 2) NumArgs(2, args).left 
     else
       for {
         left  <- unpacker(args.head)
         right <- unpacker(args.last)
       } yield BoolExp(op(left, right))
 
-  def unpackStr(v: Exp) = v match {
+  def unpackStr(exp: Exp) = exp match {
     case StringExp(s) => s.right
     case NumExp(n) => n.toString.right
     case BoolExp(b) => b.toString.right
-    case otherType => ("Invalid type: expected String, found " + otherType).left
+    case _ => TypeMismatch("string", exp).left
   }
 
-  def unpackBool(v: Exp) = v match {
+  def unpackBool(exp: Exp) = exp match {
     case BoolExp(b) => b.right
-    case otherType => ("Invalid type: expected Bool, found " + otherType).left
+    case _ => TypeMismatch("bool", exp).left
   }  
 
 

@@ -10,7 +10,7 @@ import scalaz._
 import Scalaz._
 
 
-object Reader extends RegexParsers {
+object Reader extends RegexParsers {   
 
   private def atom = """[a-zA-Z!#$%&|*+-/:<=>?@^_~][a-zA-Z0-9!#$%&|*+-/:<=>?@^_~]*""".r ^^ { 
     case "#t" => BoolExp(true)
@@ -31,9 +31,9 @@ object Reader extends RegexParsers {
   private def expr : Parser[Exp] = atom | str | num | quoted | "(" ~> (list | dottedList) <~ ")"
 
     
-  def apply(input: String): String \/ Exp =
+  def apply(input: String): ErrorMsg \/ Exp =
     parse(expr, input) match {
       case Success(res, _) => res.right
-      case NoSuccess(msg, _) => msg.left 
+      case NoSuccess(msg, _) => ParseError(msg).left 
     }
 }
