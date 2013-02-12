@@ -7,11 +7,12 @@ package org.jetho.scms
 
 import scalaz._
 import Scalaz._
+import scala.util.control.Exception._
 
 
 object Eval {
 
-  type Result[A] = ErrorMsg \/ A  
+  type Result[+A] = ErrorMsg \/ A  
   type Primitive = List[Exp] => Result[Exp]
 
 
@@ -44,7 +45,7 @@ object Eval {
     
   def unpackNum(exp: Exp): Result[Int] = exp match {
     case NumExp(n) => n.right
-    case StringExp(s) => try { s.toInt.right } catch { case _: Throwable => TypeMismatch("number", exp).left }
+    case StringExp(s) => allCatch.either(s.toInt).fold(_ => TypeMismatch("number", exp).left, _.right)
     case ListExp(List(n)) => unpackNum(n)
     case _ => TypeMismatch("number", exp).left
   }
@@ -71,7 +72,22 @@ object Eval {
   def unpackBool(exp: Exp) = exp match {
     case BoolExp(b) => b.right
     case _ => TypeMismatch("bool", exp).left
-  }  
+  } 
+
+  def car: Primitive = args => args match {
+    case List(ListExp(x :: xs)) => x.right
+    case List(DottedListExp(x :: xs, _)) => x.right
+    case List(other) => TypeMismatch("pair", other).left
+    case _ => NumArgs(1, args).left
+  }
+
+  def cdr: Primitive = args => args match {
+    case List(ListExp(x::xs)) => ListExp(xs).right
+    case List(DottedListExp(_ :: xs, x)) => DottedListExp(xs, x).right
+    case List(DottedListExp(_, x)) => x.right
+    case List(other) => TypeMismatch("pair", other).left
+    case _ => NumArgs(1, args).left
+  }
 
 
   val primitives: Map[String, Primitive] = 
@@ -95,7 +111,9 @@ object Eval {
       "string<?" -> strBoolBinOp (_ < _),
       "string>?" -> strBoolBinOp (_ > _),
       "string<=?" -> strBoolBinOp (_ <= _),
-      "string>=?" -> strBoolBinOp (_ >= _)
+      "string>=?" -> strBoolBinOp (_ >= _),
+      "car" -> car,
+      "cdr" -> cdr
     )  
 }
   
