@@ -31,7 +31,7 @@ object Reader extends RegexParsers {
   private def expr : Parser[Exp] = atom | str | num | quoted | "(" ~> (list | dottedList) <~ ")"
 
     
-  def apply(input: String): ErrorMsg \/ Exp =
+  def read(input: String): ErrorMsg \/ Exp =
     parse(expr, input) match {
       case Success(res, _) => res.right
       case NoSuccess(msg, _) => ParseError(msg).left 

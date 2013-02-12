@@ -33,7 +33,7 @@ object Eval {
   }
 
   def applyFunc(id: String)(args: List[Exp]) =
-    primitives.get(id) map { _.apply(args) } getOrElse NotFunction("Unrecognized primitive function args", id).left
+    primitives.get(id) some { _.apply(args) } none { NotFunction("Unrecognized primitive function args", id).left }
 
   def numericBinOp(op: (Int, Int) => Int)(args: List[Exp]) = 
     if (args.length < 2) NumArgs(2, args).left
