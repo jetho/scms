@@ -89,6 +89,29 @@ object Eval {
     case _ => NumArgs(1, args).left
   }
 
+  def cons: Primitive = args => args match {
+    case List(x, ListExp(Nil)) => ListExp(List(x)).right
+    case List(x, ListExp(xs)) => ListExp(x :: xs).right
+    case List(x, DottedListExp(xs1, xs2)) => DottedListExp(x :: xs1, xs2).right
+    case List(x1, x2) => DottedListExp(List(x1), x2).right
+    case _ => NumArgs(2, args).left
+  }     
+
+  def eqv: List[Exp] => Result[BoolExp] = args => args match {
+   case List(BoolExp(b1), BoolExp(b2)) => BoolExp(b1 == b2).right
+   case List(NumExp(n1), NumExp(n2)) => BoolExp(n1 == n2).right
+   case List(StringExp(s1), StringExp(s2)) => BoolExp(s1 == s2).right
+   case List(SymbolExp(sym1), SymbolExp(sym2)) => BoolExp(sym1 == sym2).right
+   case List(DottedListExp(xs, x), DottedListExp(ys, y)) => BoolExp(xs == ys && x == y).right
+   case List(ListExp(xs), ListExp(ys)) =>  
+     def eqvPair: Pair[Exp, Exp] => Boolean = { case (e1, e2) => 
+       eqv(List(e1, e2)) flatMap unpackBool getOrElse false 
+     }
+     BoolExp((xs.length == ys.length) && (xs.zip(ys) forall eqvPair)).right
+   case List(_, _) => BoolExp(false).right
+   case _ => NumArgs(2, args).left
+  }
+
 
   val primitives: Map[String, Primitive] = 
     Map( 
@@ -113,7 +136,9 @@ object Eval {
       "string<=?" -> strBoolBinOp (_ <= _),
       "string>=?" -> strBoolBinOp (_ >= _),
       "car" -> car,
-      "cdr" -> cdr
+      "cdr" -> cdr,
+      "cons" -> cons,
+      "eqv?" -> eqv
     )  
 }
   
