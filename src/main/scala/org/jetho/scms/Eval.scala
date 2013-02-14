@@ -7,7 +7,8 @@ package org.jetho.scms
 
 import scalaz._
 import Scalaz._
-import scala.util.control.Exception._
+import scalaz.\/._
+import Function.const
 
 
 object Eval {
@@ -45,7 +46,7 @@ object Eval {
     
   def unpackNum(exp: Exp): Result[Int] = exp match {
     case NumExp(n) => n.right
-    case StringExp(s) => allCatch.either(s.toInt).fold(_ => TypeMismatch("number", exp).left, _.right)
+    case StringExp(s) => fromTryCatch(s.toInt) bimap (const(TypeMismatch("number", exp)), identity) 
     case ListExp(List(n)) => unpackNum(n)
     case _ => TypeMismatch("number", exp).left
   }
