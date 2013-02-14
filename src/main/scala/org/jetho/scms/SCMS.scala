@@ -47,6 +47,6 @@ object SCMS {
   }
 
 
-  val welcomeMsg = "\n - Welcome to SMCS! -\n"
+  val welcomeMsg = "\n - Welcome to SCMS! -\n"
   val quitMsg = "Bye!\n"
 }
