@@ -15,8 +15,7 @@ object SCMS {
   @tailrec 
   def until[A](pred: A => Boolean)(prompt: => A)(action: A => Unit) {
     val res = prompt
-    if (pred(res)) return ()
-    else {
+    if (!pred(res)) {
       action(res)
       until(pred)(prompt)(action)
     }
