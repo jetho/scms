@@ -13,7 +13,7 @@ object SCMS {
   val scanner = new Scanner(System.in)
 
   @tailrec 
-  def until[A](pred: A => Boolean)(prompt: => A)(action: A => Unit): Unit = {
+  def until[A](pred: A => Boolean)(prompt: => A)(action: A => Unit) {
     val res = prompt
     if (pred(res)) return ()
     else {
@@ -33,7 +33,7 @@ object SCMS {
     scanner.nextLine
   }
 
-  def evalAndPrint(expr: String): Unit = {
+  def evalAndPrint(expr: String) {
     val res = Reader.read(expr) >>= Eval.eval
     res.fold(errMsg => println("Error: " + errMsg), println)
   }
