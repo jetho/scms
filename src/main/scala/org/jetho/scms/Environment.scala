@@ -19,11 +19,11 @@ class Environment(ids: Map[String, Exp], parent: Option[Environment]) {
   /** Search up the scope stack for a given identifier.
       Apply the action function to the scope which contains the identifier.
       Fail if the scope stack doesn't contain a valid binding for the identifier.*/
-  private def forScopeOf(id: String)(action: (Scope => Exp)): String \/ Exp =
+  private def forScopeOf(id: String)(action: (Scope => Exp)): ErrorMsg \/ Exp =
     if (ids contains id)
       action(ids).right
     else
-      parent.map(_.forScopeOf(id)(action)).getOrElse(("No valid binding found for Identifier " + id).left)
+      parent.map(_.forScopeOf(id)(action)).getOrElse(UnboundVar("Unbound Variable", id).left)
 
   /** Search the scope stack for the given identifier and return the associated value.*/
   def lookup(name: String) =
@@ -33,11 +33,16 @@ class Environment(ids: Map[String, Exp], parent: Option[Environment]) {
 
   /** Search the scope stack for the given identifier and update its value.
       Return the new value.*/
-  def update(name: String, value: Exp) = 
+  def update(name: String)(value: Exp) = 
     forScopeOf(name) { scope =>
       scope(name) = value
       value
     }
+
+  def define(name: String)(value: Exp) = {
+    ids(name) = value
+    value.right
+  }
 
   /** Extend the environment by creating a new one with the current env as parent.*/
   def extend(bindings: List[(String, Exp)]) = new Environment(Map(bindings : _*), Some(this))

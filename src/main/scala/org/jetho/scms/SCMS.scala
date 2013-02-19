@@ -12,6 +12,9 @@ object SCMS {
 
   val scanner = new Scanner(System.in)
 
+
+  def initialEnv = EmptyEnvironment.extend(Primitives.primitives)
+
   @tailrec 
   def until[A](pred: A => Boolean)(prompt: => A)(action: A => Unit) {
     val res = prompt
@@ -33,7 +36,7 @@ object SCMS {
   }
 
   def evalAndPrint(expr: String) {
-    val res = Reader.read(expr) >>= Eval.eval
+    val res = Reader.read(expr) >>= Eval.eval(initialEnv)
     res.fold(errMsg => println("Error: " + errMsg), println)
   }
   
