@@ -17,7 +17,7 @@ case class ListExp(elems: List[Exp]) extends Exp {
   override def toString = "(" + elems.mkString(" ") + ")"
 }
 
-case class DottedListExp(head : List[Exp], tail :Exp) extends Exp {
+case class DottedListExp(head: List[Exp], tail: Exp) extends Exp {
   override def toString = "(" + head.mkString(" ") + " . " + tail + ")"
 }
 

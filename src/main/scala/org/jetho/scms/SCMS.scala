@@ -13,7 +13,7 @@ object SCMS {
   val scanner = new Scanner(System.in)
 
 
-  def initialEnv = EmptyEnvironment.extend(Primitives.primitives)
+  val initialEnv = EmptyEnvironment.extend(Primitives.primitives)
 
   @tailrec 
   def until[A](pred: A => Boolean)(prompt: => A)(action: A => Unit) {

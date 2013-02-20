@@ -20,7 +20,7 @@ case class BadSpecialForm(msg: String, exp: Exp) extends ErrorMsg {
   override def toString = s"$msg: $exp"
 }
 
-case class NotFunction(msg: String, func: String) extends ErrorMsg {
+case class NotFunction(msg: String, func: Exp) extends ErrorMsg {
   override def toString = s"$msg: $func"
 }
 
