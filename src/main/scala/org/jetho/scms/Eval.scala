@@ -66,9 +66,7 @@ object Eval {
         val argBindings = params zip args
         val varargBindings = varargs.map { (_, ListExp(args drop params.length)) }.toList
         val extendedEnv = closure.extend(argBindings ++ varargBindings)
-        for {
-          results <- body.map(eval(extendedEnv)).sequenceU
-        } yield results.last
+        (body.map(eval(extendedEnv)).sequenceU) map { _.last }
       }
     case _ => NotFunction("Illegal Function Expression", func).left
   }
