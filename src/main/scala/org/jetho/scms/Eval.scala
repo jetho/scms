@@ -73,10 +73,5 @@ object Eval {
     case _ => NotFunction("Illegal Function Expression", func).left
   }
 
-
-
-  
-   // Primitives.primitives.get(id) some { _.apply(args) } none { NotFunction("Unrecognized primitive function args", id).left }
-    
 }
   
