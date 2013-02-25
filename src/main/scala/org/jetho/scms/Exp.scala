@@ -3,8 +3,10 @@
 
 
 package org.jetho.scms
+
 import scalaz._
 import Scalaz._
+import java.io._
 
 
 sealed abstract class Exp
@@ -41,5 +43,15 @@ case class Func(params: List[String], vararg: Option[String], body: List[Exp], c
   override def toString = "(lambda (" + params.mkString(" ") + vararg.map{" . " + _}.getOrElse("") + ") ...)"
 }
 
+case class IOFunc(f: List[Exp] => ErrorMsg \/ Exp) extends Exp {
+  override def toString = "<IO primitive>"
+}
 
+case class InPort(reader: BufferedReader) extends Exp {
+  override def toString = "<IO port>"
+}
+
+case class OutPort(reader: BufferedWriter) extends Exp {
+  override def toString = "<IO port>"
+}
 

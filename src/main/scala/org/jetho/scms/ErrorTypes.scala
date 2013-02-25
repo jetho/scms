@@ -28,6 +28,10 @@ case class UnboundVar(msg: String, name: String) extends ErrorMsg {
   override def toString = s"$msg: $name"
 }
 
+case class IOErrorMsg(err: Throwable) extends ErrorMsg {
+  override def toString = err.getMessage.toString
+}
+
 case class Default(msg: String) extends ErrorMsg {
   override def toString = msg
 }

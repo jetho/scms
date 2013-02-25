@@ -5,6 +5,9 @@ import scalaz._
 import Scalaz._
 import scalaz.\/._
 import Function.const
+import scala.io.Source._
+import java.io._
+import language.reflectiveCalls
 
 
 object Primitives {
@@ -14,6 +17,8 @@ object Primitives {
   
   
   def primitives = primitivesList map makeFunc(PrimitiveFunc)  
+
+  def ioPrimitives = ioPrimitivesList map makeFunc(IOFunc)
 
 
   private def makeFunc(constr: Primitive => Exp)(f: (String, Primitive)) = (f._1, constr(f._2))
@@ -94,6 +99,47 @@ object Primitives {
     case _ => NumArgs(2, args).left
   }
 
+  private def applyProc: Primitive = args => args match {
+    case List(f, ListExp(params)) => Eval.applyFunc(f)(params)
+    case f :: params => Eval.applyFunc(f)(params)
+  }
+
+  private def makePort[A](constr: String => A)(ioExpType: A => Exp): Primitive = args => args match {
+    case List(StringExp(fname)) => fromTryCatch(constr(fname)) bimap (IOErrorMsg, ioExpType)
+    case List(s) => TypeMismatch("string", s).left
+  }
+  
+  private def closePort: Primitive = args => {
+    def closeMe(p:{ def close(): Unit; }) = 
+      fromTryCatch(p.close()) bimap (IOErrorMsg, const(BoolExp(true)))
+    args match {
+      case List(InPort(p)) => closeMe(p)
+      case List(OutPort(p)) => closeMe(p)
+      case _ => BoolExp(false).right
+    }
+  }  
+
+  private def readContents: Primitive = args => args match {
+    case List(StringExp(fname)) => fromTryCatch(fromFile(fname).getLines.mkString) bimap (IOErrorMsg, StringExp)
+    case List(s) => TypeMismatch("string", s).left
+  }
+
+  private def readProc: Primitive = args => args match {
+    case Nil => readProc(List(InPort(createBufferedSource(System.in).bufferedReader)))
+    case List(InPort(p)) => Reader.readExpr(p.readLine)
+  }
+  
+  private def writeProc: Primitive = args => args match {
+    case List(obj) => writeProc(List(obj, OutPort(new BufferedWriter(new PrintWriter(System.out)))))
+    case List(obj, OutPort(p)) => fromTryCatch(p.write(obj.toString)) bimap (IOErrorMsg, const(BoolExp(true)))
+  }
+
+
+  private def fileReader: String => BufferedReader = fname => new BufferedReader(new FileReader(fname))
+
+  private def fileWriter: String => BufferedWriter = fname => new BufferedWriter(new FileWriter(fname))
+
+ 
   private val primitivesList: List[(String, Primitive)] = 
     List( 
       ("+", numericBinOp (_ + _)),
@@ -121,5 +167,18 @@ object Primitives {
       ("cons", cons),
       ("eqv?", eqv)
     )
-  
+
+  private val ioPrimitivesList: List[(String, Primitive)] = 
+    List(
+      ("apply", applyProc),
+      ("open-input-file", makePort(fileReader)(InPort)),
+      ("open-output-file", makePort(fileWriter)(OutPort)),
+      ("close-input-port", closePort),
+      ("close-output-port", closePort),
+      ("read", readProc),
+      ("write", writeProc),
+      ("read-contents", readContents),
+      ("read-all", Reader.readAll)
+    )
+      
 }

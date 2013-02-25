@@ -13,7 +13,7 @@ object SCMS {
   val scanner = new Scanner(System.in)
 
 
-  val initialEnv = EmptyEnvironment.extend(Primitives.primitives)
+  val initialEnv = EmptyEnvironment.extend(Primitives.primitives ::: Primitives.ioPrimitives)
 
   @tailrec 
   def until[A](pred: A => Boolean)(prompt: => A)(action: A => Unit) {
@@ -36,7 +36,7 @@ object SCMS {
   }
 
   def evalAndPrint(expr: String) {
-    val res = Reader.read(expr) >>= Eval.eval(initialEnv)
+    val res = Reader.readExpr(expr) >>= Eval.eval(initialEnv)
     res.fold(errMsg => println("Error: " + errMsg), println)
   }
   
@@ -44,7 +44,7 @@ object SCMS {
   def main(args: Array[String]) {
     args.toList match {
       case Nil => runRepl
-      case expression :: Nil => evalAndPrint(expression)
+      case file :: Nil => evalAndPrint("(load \"" + file + "\")")
       case _ => println("Program takes only 0 or 1 argument") 
     }
   }

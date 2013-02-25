@@ -40,6 +40,8 @@ object Eval {
       makeVarargs(varargs)(env, params, body)
     case ListExp(SymbolExp("lambda") :: (varargs @ SymbolExp(_)) :: body) => 
       makeVarargs(varargs)(env, Nil, body)
+    case ListExp(List(SymbolExp("load"), StringExp(filename))) =>
+      Reader.loadAndParse(filename) >>= (_.map(eval(env)).sequenceU map { _.last })
     case ListExp(f :: args) => 
       for {
         func <- eval(env)(f)
@@ -57,8 +59,9 @@ object Eval {
 
   private def makeVarargs(exp: Exp) = makeFunc(exp.toString.some) _
 
-  private def applyFunc(func: Exp)(args: List[Exp]) = func match {
-    case PrimitiveFunc(f) => f apply args
+  private[scms] def applyFunc(func: Exp)(args: List[Exp]) = func match {
+    case PrimitiveFunc(f) => f(args)
+    case IOFunc(f) => f(args)
     case Func(params, varargs, body, closure) =>
       if (params.length != args.length && varargs == None)
         NumArgs(params.length, args).left
