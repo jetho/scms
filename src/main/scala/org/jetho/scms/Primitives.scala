@@ -104,8 +104,8 @@ object Primitives {
     case f :: params => Eval.applyFunc(f)(params)
   }
 
-  private def makePort[A](constr: String => A)(ioExpType: A => Exp): Primitive = args => args match {
-    case List(StringExp(fname)) => fromTryCatch(constr(fname)) bimap (IOErrorMsg, ioExpType)
+  private def makePort(constr: String => Exp): Primitive = args => args match {
+    case List(StringExp(fname)) => fromTryCatch(constr(fname)) bimap (IOErrorMsg, identity)
     case List(s) => TypeMismatch("string", s).left
   }
   
@@ -135,9 +135,9 @@ object Primitives {
   }
 
 
-  private def fileReader: String => BufferedReader = fname => new BufferedReader(new FileReader(fname))
+  private def fileReader: String => InPort = fname => InPort(new BufferedReader(new FileReader(fname)))
 
-  private def fileWriter: String => BufferedWriter = fname => new BufferedWriter(new FileWriter(fname))
+  private def fileWriter: String => OutPort = fname => OutPort(new BufferedWriter(new FileWriter(fname)))
 
  
   private val primitivesList: List[(String, Primitive)] = 
@@ -171,8 +171,8 @@ object Primitives {
   private val ioPrimitivesList: List[(String, Primitive)] = 
     List(
       ("apply", applyProc),
-      ("open-input-file", makePort(fileReader)(InPort)),
-      ("open-output-file", makePort(fileWriter)(OutPort)),
+      ("open-input-file", makePort(fileReader)),
+      ("open-output-file", makePort(fileWriter)),
       ("close-input-port", closePort),
       ("close-output-port", closePort),
       ("read", readProc),
