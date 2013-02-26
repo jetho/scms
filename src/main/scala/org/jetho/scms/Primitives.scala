@@ -32,7 +32,7 @@ object Primitives {
     
   private def unpackNum(exp: Exp): Result[Int] = exp match {
     case NumExp(n) => n.right
-    case StringExp(s) => fromTryCatch(s.toInt) bimap (const(TypeMismatch("number", exp)), identity) 
+    case StringExp(s) => fromTryCatch(s.toInt) leftMap const(TypeMismatch("number", exp))
     case ListExp(List(n)) => unpackNum(n)
     case _ => TypeMismatch("number", exp).left
   }
@@ -105,7 +105,7 @@ object Primitives {
   }
 
   private def makePort(constr: String => Exp): Primitive = args => args match {
-    case List(StringExp(fname)) => fromTryCatch(constr(fname)) bimap (IOErrorMsg, identity)
+    case List(StringExp(fname)) => fromTryCatch(constr(fname)) leftMap IOErrorMsg
     case List(s) => TypeMismatch("string", s).left
   }
   
