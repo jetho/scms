@@ -12,7 +12,6 @@ object SCMS {
 
   private val scanner = new Scanner(System.in)
  
-
   private def initEnv = 
     for {
       exp <- Reader.readExpr("(load \"stdlib.scm\")") 

@@ -53,5 +53,3 @@ class Environment(ids: Map[String, Exp], parent: Option[Environment]) {
 /** The empty environment represents the initial or top level environment.*/
 object EmptyEnvironment extends Environment(Map[String, Exp](), None)
 
-
-
