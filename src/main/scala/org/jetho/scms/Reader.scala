@@ -14,7 +14,7 @@ import scala.io.Source.fromFile
 
 object Reader extends RegexParsers {   
 
-  private def atom = """[a-zA-Z!#$%&|*+-/:<=>?@^_~][a-zA-Z0-9!#$%&|*+-/:<=>?@^_~]*""".r ^^ { 
+  private def atom = """[a-zA-Z\Q!$%&|*+-/:<=>?@^_~#\E][a-zA-Z\Q!$%&|*+-/:<=>?@^_~#\E0-9]*""".r ^^ { 
     case "#t" => BoolExp(true)
     case "#f" => BoolExp(false)
     case sym => SymbolExp(sym)
@@ -26,13 +26,13 @@ object Reader extends RegexParsers {
 
   private def quoted = "'" ~> expr ^^ { e => ListExp(List(SymbolExp("quote"), e)) }
 
+  private def dottedList = rep(expr) ~ "." ~ expr ^^ { case head ~ "." ~ tail => DottedListExp(head, tail) }
+
   private def list = rep(expr) ^^ { ListExp }
 
-  private def dottedList = rep(expr) ~ "." ~ expr ^^ { case head ~ "." ~ tail => new DottedListExp(head, tail) }
+  private def expr: Parser[Exp] = atom | str | num | quoted | "(" ~> (dottedList | list) <~ ")"
 
-  private def expr: Parser[Exp] = atom | str | num | quoted | "(" ~> (list | dottedList) <~ ")"
-
-  private def exprList: Parser[List[Exp]] = rep(expr)
+  private def exprList: Parser[List[Exp]] = rep(expr) <~ "$".r
 
     
   private def readOrThrow[A](parser: Parser[A])(input: String): ErrorMsg \/ A =
