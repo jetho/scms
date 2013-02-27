@@ -10,22 +10,18 @@ import scala.annotation.tailrec
 
 object SCMS {
 
-  val scanner = new Scanner(System.in)
+  private val scanner = new Scanner(System.in)
  
-  
-  def initialEnv = EmptyEnvironment.extend(Primitives.primitives ::: Primitives.ioPrimitives)
 
-  def loadStdLib(env: Environment) = 
-    Reader.readExpr("(load \"stdlib.scm\")") >>= Eval.eval(env)    
-
-  def initEnv = 
+  private def initEnv = 
     for {
-      env <- initialEnv.right
-      _   <- loadStdLib(env)
+      exp <- Reader.readExpr("(load \"stdlib.scm\")") 
+      env =  EmptyEnvironment.extend(Primitives.primitives ::: Primitives.ioPrimitives)
+      _   <- Eval.eval(env)(exp)
     } yield env
 
   @tailrec 
-  def until[A](pred: A => Boolean)(prompt: => A)(action: Environment => A => Unit)(env: Environment) {
+  private def until[A](pred: A => Boolean)(prompt: => A)(action: Environment => A => Unit)(env: Environment) {
     val res = prompt
     if (!pred(res)) {
       action(env)(res)
@@ -33,27 +29,26 @@ object SCMS {
     }
   }
     
-  def readPrompt(s: String): String = {
+  private def readPrompt(s: String): String = {
     print(s); System.out.flush()
     scanner.nextLine
   }
 
-  def evalAndPrint(env: Environment)(expr: String) {
+  private def evalAndPrint(env: Environment)(expr: String) {
     val res = Reader.readExpr(expr) >>= Eval.eval(env)
     res.fold(errMsg => println("Error: " + errMsg), println)
   }
 
-  def run(action: Environment => Unit) =
+  private def run(action: Environment => Unit) =
     initEnv fold (printInitError, env => action(env))
-
   
-  def runRepl {
+  private def runRepl {
     println(welcomeMsg)
     run(env => until[String](_ == "quit")(readPrompt("SCMS>>> "))(evalAndPrint)(env))
     println(quitMsg)
   }
 
-  def runOne(file: String) {
+  private def runOne(file: String) {
     run(env => evalAndPrint(env)("(load \"" + file + "\")"))
   }
 
@@ -67,10 +62,10 @@ object SCMS {
   }
 
 
-  def initError: ErrorMsg => String = s => s"Error while initializing the standard environment: $s"
+  private def initError: ErrorMsg => String = s => s"Error while initializing the standard environment: $s"
 
-  def printInitError = initError andThen println
+  private def printInitError = initError andThen println
 
-  val welcomeMsg = "\n - Welcome to SCMS! -\n"
-  val quitMsg = "Bye!\n"
+  private val welcomeMsg = "\n - Welcome to SCMS! -\n"
+  private val quitMsg = "Bye!\n"
 }
