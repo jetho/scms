@@ -1,21 +1,15 @@
 ## SCMS
 
 
-#### A CPS-based Scheme Interpreter in Scala
+#### A Continuation Passing Interpreter for Scheme
 
-My aim with this project is to implement an Interpreter for a decent subset of Scheme in Scala. 
-This project is still in its beginning stages.
-
-
-The next points to do:
-
+Done:
+* implement the S-Expression parser
 * implement a basic recursive evaluator
 * add primitive operations
+* add REPL
+
+Todo:
 * add support for macros
 * convert to continuation passing style to support tail call optimization
-
-
-Maybe later:
-
-* oop support
 * implement a compiler 
