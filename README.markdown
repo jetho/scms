@@ -11,5 +11,5 @@ Done:
 
 Todo:
 * add support for macros
-* convert to continuation passing style to support tail call optimization
+* convert to continuation passing style for supporting tail call optimization
 * implement a compiler 
